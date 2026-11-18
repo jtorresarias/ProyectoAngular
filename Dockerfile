@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Etapa 2: Servidor web (Nginx)
-FROM nginx:alpine
+FROM nginx/nginx-unprivileged:alpine
 
 # Copiar la configuración personalizada de Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -25,4 +25,8 @@ COPY --from=build /app/dist/first-angular-app/browser /usr/share/nginx/html
 # Exponer el puerto 80
 EXPOSE 80
 
+# Verificar cada 30s que Nginx responde correctamente
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
+  
 CMD ["nginx", "-g", "daemon off;"]
